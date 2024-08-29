@@ -4,8 +4,6 @@ import yaml
 from pathlib import Path
 import re
 
-# TODO: Check datatype for weight and opacity
-# TODO: Implement getters and setter for some properties like "_icon_filename" (should end with .svg)
 # TODO: Implement Docstrings for classes and methods
 # TODO: Write unittests
 
@@ -44,12 +42,12 @@ class Icon:
         self._icon_color = color
 
 @dataclass
-class Waypoint:
+class WaypointType:
     name: str
     icon: Icon
 
 @dataclass
-class Track:
+class TrackType:
     name: str
     weight: float 
     opacity: float
@@ -68,8 +66,8 @@ class Track:
 
 @dataclass
 class MapStyle:
-    waypoints: List[Waypoint] = field(default_factory=list)
-    tracks: List[Track] = field(default_factory=list)
+    waypoint_types: List[WaypointType] = field(default_factory=list)
+    track_types: List[TrackType] = field(default_factory=list)
 
 @dataclass
 class Layer:
@@ -104,12 +102,12 @@ class MapConfig:
             data = yaml.safe_load(file)
         
         layers = [Layer(**layer) for layer in data['layers']]
-        waypoints = [Waypoint(name=wp['name'], icon=Icon(**wp['icon'])) for wp in data['map_style']['waypoints']]
-        tracks = [Track(**track) for track in data['map_style']['tracks']]
+        waypoint_types = [WaypointType(name=wp['name'], icon=Icon(**wp['icon'])) for wp in data['map_style']['waypoint_types']]
+        track_types = [TrackType(**track_type) for track_type in data['map_style']['track_types']]
         
         map_style = MapStyle(
-            waypoints=waypoints,
-            tracks=tracks
+            waypoint_types=waypoint_types,
+            track_types=track_types
         )
         
         return MapConfig(
@@ -166,112 +164,112 @@ class MapConfig:
                 return layer
         return None
 
-    def add_waypoint(self, waypoint: Waypoint):
-        self.map_style.waypoints.append(waypoint)
+    def add_waypoint_type(self, WaypointType: WaypointType):
+        self.map_style.waypoint_types.append(WaypointType)
 
-    def delete_waypoint(self, waypoint_name: str):
-        self.map_style.waypoints = [wp for wp in self.map_style.waypoints if wp.name != waypoint_name]
+    def delete_waypoint_type(self, WaypointType_name: str):
+        self.map_style.waypoint_types = [wp for wp in self.map_style.waypoint_types if wp.name != WaypointType_name]
 
-    def get_waypoint(self, waypoint_name: str) -> Optional[Waypoint]:
-        for wp in self.map_style.waypoints:
-            if wp.name == waypoint_name:
+    def get_waypoint_type(self, WaypointType_name: str) -> Optional[WaypointType]:
+        for wp in self.map_style.waypoint_types:
+            if wp.name == WaypointType_name:
                 return wp
         return None
 
-    def add_track(self, track: Track):
-        self.map_style.tracks.append(track)
+    def add_track_type(self, track_type: TrackType):
+        self.map_style.track_types.append(track_type)
 
-    def delete_track(self, track_name: str):
-        self.map_style.tracks = [track for track in self.map_style.tracks if track.name != track_name]
+    def delete_track_type(self, track_type_name: str):
+        self.map_style.track_types = [track_type for track_type in self.map_style.track_types if track_type.name != track_type_name]
 
-    def get_track(self, track_name: str) -> Optional[Track]:
-        for track in self.map_style.tracks:
-            if track.name == track_name:
-                return track
+    def get_track_type(self, track_type_name: str) -> Optional[TrackType]:
+        for track_type in self.map_style.track_types:
+            if track_type.name == track_type_name:
+                return track_type
         return None
 
-    def add_icon_to_waypoint(self, waypoint_name: str, icon: Icon):
-        waypoint = self.get_waypoint(waypoint_name)
-        if waypoint:
-            waypoint.icon = icon
+    def add_icon_to_waypoint_type(self, WaypointType_name: str, icon: Icon):
+        WaypointType = self.get_waypoint_type(WaypointType_name)
+        if WaypointType:
+            WaypointType.icon = icon
 
-    def update_waypoint_icon(self, waypoint_name: str, 
+    def update_waypoint_type_icon(self, WaypointType_name: str, 
                              icon_filename: str, 
                              icon_color: str):
-        waypoint = self.get_waypoint(waypoint_name)
-        if waypoint:
-            waypoint.icon.icon_filename = icon_filename
-            waypoint.icon.icon_color = icon_color
+        WaypointType = self.get_waypoint_type(WaypointType_name)
+        if WaypointType:
+            WaypointType.icon.icon_filename = icon_filename
+            WaypointType.icon.icon_color = icon_color
         else:
-            raise ValueError(f"waypoint with name: {waypoint_name} doesn't exist.")
+            raise ValueError(f"WaypointType with name: {WaypointType_name} doesn't exist.")
 
 
 
 # Create Configuration file
 # =========================
-# map_config = MapConfig()
+map_config = MapConfig()
 
-# # Set map name and root directory
-# map_config.map_name = 'My New Map'
-# map_config.root_directory = ''
+# Set map name and root directory
+map_config.map_name = 'My New Map'
+map_config.root_directory = ''
 
-# # Add a new layer
-# new_layer = Layer(name='layer1', source_directory='/path/to/layer1')
-# map_config.add_layer(new_layer)
+# Add a new layer
+new_layer = Layer(name='layer1', source_directory='/path/to/layer1')
+map_config.add_layer(new_layer)
 
-# new_layer = Layer(name='layer2', source_directory='/path/to/layer2')
-# map_config.add_layer(new_layer)
+new_layer = Layer(name='layer2', source_directory='/path/to/layer2')
+map_config.add_layer(new_layer)
 
-# new_layer = Layer(name='layer3', source_directory='/path/to/layer3')
-# map_config.add_layer(new_layer)
+new_layer = Layer(name='layer3', source_directory='/path/to/layer3')
+map_config.add_layer(new_layer)
 
-# # Add a new waypoints with an icon
-# new_waypoint = Waypoint(name='camping', icon=Icon(icon_filename='tent.svg', icon_color='#FFFFFF'))
-# map_config.add_waypoint(new_waypoint)
+# Add a new waypoint with an icon
+new_waypoint_type = WaypointType(name='camping', icon=Icon(icon_filename='tent.svg', icon_color='#FFFFFF'))
+map_config.add_waypoint_type(new_waypoint_type)
 
-# new_waypoint = Waypoint(name='hostel', icon=Icon(icon_filename='accommodation.svg', icon_color='#FFFAAA'))
-# map_config.add_waypoint(new_waypoint)
+new_waypoint_type = WaypointType(name='hostel', icon=Icon(icon_filename='accommodation.svg', icon_color='#FFFAAA'))
+map_config.add_waypoint_type(new_waypoint_type)
 
-# new_waypoint = Waypoint(name='Wildcamping', icon=Icon(icon_filename='tent.svg', icon_color='#000000'))
-# map_config.add_waypoint(new_waypoint)
+new_waypoint_type = WaypointType(name='Wildcamping', icon=Icon(icon_filename='tent.svg', icon_color='#000000'))
+map_config.add_waypoint_type(new_waypoint_type)
 
-# # Add a new tracks
-# new_track = Track(name='Cycled', color='#555666', weight=10, opacity=0.9)
-# map_config.add_track(new_track)
+# Add a new track_type
+new_track_type = TrackType(name='Cycled', color='#555666', weight=10, opacity=0.9)
+map_config.add_track_type(new_track_type)
 
-# new_track = Track(name='Public Transport', color='#999999', weight=5, opacity=0.7)
-# map_config.add_track(new_track)
+new_track_type = TrackType(name='Public Transport', color='#999999', weight=5, opacity=0.7)
+map_config.add_track_type(new_track_type)
 
-# # Save the updated Mapconfiguration to a YAML file
-# map_config.to_yaml()
+# Save the updated Mapconfiguration to a YAML file
+map_config.to_yaml()
 
 
 # Read existing config file and save it again
 # ===========================================
-map_config = MapConfig.from_yaml("My_New_Map_config.yaml")
-print(map_config.filename)
-map_config.map_name = "second map"
-print(map_config.filename)
-new_waypoint = Waypoint(name='Wildcamping', icon=Icon(icon_filename='tent.svg', icon_color='#000000'))
-map_config.add_waypoint(new_waypoint)
-map_config.to_yaml()
+# map_config = MapConfig.from_yaml("My_New_Map_config.yaml")
+# print(map_config.filename)
+# map_config.map_name = "second map"
+# print(map_config.filename)
+# new_waypoint_type = WaypointType(name='Wildcamping', icon=Icon(icon_filename='tent.svg', icon_color='#000000'))
+# map_config.add_waypoint_type(new_waypoint_type)
+# map_config.to_yaml()
 
 
 
 
-# try to update a waypoint icon with a wrong color value
+# try to update a WaypointType icon with a wrong color value
 # ======================================================
 
-# Update the icon of the existing waypoint
-# map_config.update_waypoint_icon('camping', icon_filename='new_tent.svg', icon_color='#000000')
-# map_config.update_waypoint_icon('hostel', icon_filename='new_acco.svg', icon_color='#000333')
-# map_config.update_waypoint_icon('Wildcamping', icon_filename='new_tent.svg', icon_color='#000555')
+# # Update the icon of the existing WaypointType
+# map_config.update_waypoint_type_icon('camping', icon_filename='new_tent.svg', icon_color='#000000')
+# map_config.update_waypoint_type_icon('hostel', icon_filename='new_acco.svg', icon_color='#000333')
+# map_config.update_waypoint_type_icon('Wildcamping', icon_filename='new_tent.svg', icon_color='#000555')
 
-# Get a waypoint and its icon
-# waypoint = map_config.get_waypoint('camping')
-# if waypoint:
-#     icon = waypoint.icon
-#     print(f"Waypoint name: {waypoint.name}, Icon Name: {icon.icon_filename}, Icon Color: {icon.icon_color}, Icon Location: {icon.icon_location}")
+# # Get a WaypointType and its icon
+# WaypointType = map_config.get_waypoint_type('camping')
+# if WaypointType:
+#     icon = WaypointType.icon
+#     print(f"WaypointType name: {WaypointType.name}, Icon Name: {icon.icon_filename}, Icon Color: {icon.icon_color}")
 
 
 
